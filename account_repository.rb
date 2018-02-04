@@ -12,4 +12,17 @@ class AccountRepository
     account.id = @next_id += 1
     @accounts << account
   end
+
+  def get_account(id)
+    @accounts.each do |account|
+      if account.id == id
+        return account
+      end
+    end
+    nil
+  end
+
+  def save(account)
+    # in memory db, nothing to do
+  end
 end

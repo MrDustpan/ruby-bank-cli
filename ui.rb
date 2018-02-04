@@ -13,17 +13,20 @@ class UI
       puts "-------------------------------------------------------------------"
       accounts.each { |account| puts account.id.to_s + ") " + account.name + ": $" + account.balance.to_s }
       puts ""
-      puts "('add' = add account | 'exit' = quit)"
+      puts "('add' = add account | (ID) = account details | 'exit' = quit)"
       print "> "
       
       command = gets.strip
     end while invalid_index_command?(command)
 
     case command
-      when "add" then add
-      else
+      when "add"
+        add
+      when "exit"
         clear_screen
         puts "Goodbye."
+      else
+        account_details command.to_i
     end
   end
 
@@ -41,6 +44,48 @@ class UI
     index
   end
 
+  def account_details(id)
+    account = @account_service.get_account_details(id)
+    clear_screen
+
+    if account.nil?
+      index
+      return
+    end
+
+    begin
+      puts account.name
+      puts "-------------------------------------------------------------------"
+      account.transactions.each { |t| puts "$" + t.amount.to_s + " " + t.description }
+      puts ""
+      puts "('add' = add transaction | 'exit' = back to index)"
+      print "> "
+      
+      command = gets.strip
+    end while invalid_account_command?(command)
+
+    case command
+      when "add" 
+        add_transaction(id)
+      else
+        index
+      end
+  end
+
+  def add_transaction(account_id)
+    clear_screen
+    print "Enter the amount: "
+    amount = gets.to_f
+
+    puts ""
+    print "Enter the description: "
+    description = gets.strip
+
+    @account_service.record_transaction(account_id, amount, description)
+
+    account_details(account_id)
+  end
+
   private
 
   def clear_screen
@@ -48,6 +93,10 @@ class UI
   end
 
   def invalid_index_command?(command)
+    command != "add" && command != "exit" && command.to_i <= 0
+  end
+
+  def invalid_account_command?(command)
     command != "add" && command != "exit"
   end
 end
